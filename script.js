@@ -1,42 +1,26 @@
-(()=>{
-  const toggle=document.getElementById('menu-toggle');
-  const nav=document.getElementById('site-nav');
-  const closeMenu=()=>{nav.classList.remove('open'); toggle.setAttribute('aria-expanded','false');toggle.setAttribute('aria-label','Open navigation');};
-  toggle.addEventListener('click',()=>{const shouldOpen=!nav.classList.contains('open');nav.classList.toggle('open',shouldOpen);toggle.setAttribute('aria-expanded',String(shouldOpen));toggle.setAttribute('aria-label',shouldOpen?'Close navigation':'Open navigation');});
-  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
-  document.addEventListener('keydown',event=>{if(event.key==='Escape')closeMenu();});
-  document.addEventListener('click',event=>{if(!nav.contains(event.target)&&!toggle.contains(event.target))closeMenu();});
-  const chapters=[
-    {img:'assets/casablanca.svg',alt:'Original illustration of a North African coastal city',label:'POSTCARD · MOROCCO'},
-    {img:'assets/atlas.svg',alt:'Original illustration of snow-capped mountains',label:'POSTCARD · ATLAS MOUNTAINS'},
-    {img:'assets/horizons.svg',alt:'Original illustration of a ship on a blue sea',label:'POSTCARD · FARTHER HORIZONS'}
-  ];
-  const tabs=Array.from(document.querySelectorAll('.album-tab'));
-  const panels=Array.from(document.querySelectorAll('.album-panel'));
-  const image=document.getElementById('album-image');
-  const label=document.getElementById('album-photo-label');
-  const count=document.getElementById('current-number');
-  const progress=document.getElementById('page-track-fill');
-  let active=0;
-  function select(index,focus=false){
-    active=(index+chapters.length)%chapters.length;
-    tabs.forEach((t,i)=>{t.classList.toggle('is-active',i===active);t.setAttribute('aria-selected',String(i===active));t.tabIndex=i===active?0:-1;});
-    panels.forEach((panel,i)=>{panel.hidden=i!==active;});
-    image.src=chapters[active].img;image.alt=chapters[active].alt;
-    label.textContent=chapters[active].label;
-    count.textContent=String(active+1).padStart(2,'0');
-    progress.style.width=((active+1)/chapters.length*100)+'%';
-    if(focus)tabs[active].focus();
-  }
-  tabs.forEach((tab,i)=>{
-    tab.addEventListener('click',()=>select(i));
-    tab.addEventListener('keydown',e=>{
-      if(e.key==='ArrowRight'){e.preventDefault();select(i+1,true);}
-      if(e.key==='ArrowLeft'){e.preventDefault();select(i-1,true);}
-      if(e.key==='Home'){e.preventDefault();select(0,true);}
-      if(e.key==='End'){e.preventDefault();select(chapters.length-1,true);}
-    });
-  });
-  document.getElementById('previous-page').addEventListener('click',()=>select(active-1));
-  document.getElementById('next-page').addEventListener('click',()=>select(active+1));
-})();
+'use strict';
+const chapters = [
+  {year:'1958', title:'The world beyond Clovis', description:'After graduating from Baylor University, Mariella set off on a two-year solo journey abroad. The dream encouraged by her parents in New Mexico was becoming real.'},
+  {year:'1958–1983', title:'Four regions. A changing world.', description:'Her travels reached across Europe, North Africa, the Middle East, and the Far East. The memoir returns to places, encounters, and an era experienced firsthand.'},
+  {year:'THE FAMILY', title:'A life shared on the road', description:'Mariella later married fellow traveler Bill Harper. Their sons, Hance and Scott, became part of a family story shaped by life and travel across continents.'},
+  {year:'1983', title:'A world of memories to keep', description:'By 1983, the years of travel had become a remarkable chapter in one family’s life. Mariella brings those memories together in the memoir published in 2023.'}
+];
+const menuButton=document.getElementById('menu-toggle');
+const nav=document.getElementById('site-nav');
+if(menuButton&&nav){
+  menuButton.addEventListener('click',()=>{const open=menuButton.getAttribute('aria-expanded')!=='true';menuButton.setAttribute('aria-expanded',String(open));menuButton.setAttribute('aria-label',open?'Close navigation':'Open navigation');nav.classList.toggle('open',open)});
+  nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menuButton.setAttribute('aria-expanded','false');menuButton.setAttribute('aria-label','Open navigation')}));
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&nav.classList.contains('open')){nav.classList.remove('open');menuButton.setAttribute('aria-expanded','false');menuButton.focus()}});
+}
+const rows=[...document.querySelectorAll('.board-row')];
+const chapterNumber=document.getElementById('chapter-number');
+const chapterYear=document.getElementById('chapter-year');
+const chapterTitle=document.getElementById('chapter-title');
+const chapterDescription=document.getElementById('chapter-description');
+function activateChapter(i,focus=false){
+  const chapter=chapters[i];if(!chapter)return;
+  rows.forEach((row,j)=>{const active=i===j;row.classList.toggle('active',active);row.setAttribute('aria-pressed',String(active))});
+  chapterNumber.textContent='CHAPTER '+String(i+1).padStart(2,'0');chapterYear.textContent=chapter.year;chapterTitle.textContent=chapter.title;chapterDescription.textContent=chapter.description;
+  if(focus)rows[i].focus();
+}
+rows.forEach((row,i)=>{row.addEventListener('click',()=>activateChapter(i));row.addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?0:e.key==='End'?rows.length-1:(i+(e.key==='ArrowDown'?1:-1)+rows.length)%rows.length;activateChapter(next,true)}})});
